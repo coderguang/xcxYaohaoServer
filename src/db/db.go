@@ -3,8 +3,8 @@ package yaohaoDb
 import (
 	"database/sql"
 	"strconv"
-	yaohaoData "wx/xcx_yaohao_server/src/data"
-	yaohaoDef "wx/xcx_yaohao_server/src/define"
+	yaohaoData "xcxYaohaoServer/src/data"
+	yaohaoDef "xcxYaohaoServer/src/define"
 
 	"github.com/coderguang/GameEngine_go/sgstring"
 

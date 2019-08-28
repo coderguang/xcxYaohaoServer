@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	yaohaoData "wx/xcx_yaohao_server/src/data"
-	yaohaoDb "wx/xcx_yaohao_server/src/db"
-	yaohaoDef "wx/xcx_yaohao_server/src/define"
+	yaohaoData "xcxYaohaoServer/src/data"
+	yaohaoDb "xcxYaohaoServer/src/db"
+	yaohaoDef "xcxYaohaoServer/src/define"
 
 	"github.com/coderguang/GameEngine_go/sgfile"
 	"github.com/coderguang/GameEngine_go/sglog"

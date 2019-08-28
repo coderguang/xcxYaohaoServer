@@ -3,7 +3,7 @@ package yaohaoHandle
 import (
 	"encoding/json"
 	"net/http"
-	yaohaoData "wx/xcx_yaohao_server/src/data"
+	yaohaoData "xcxYaohaoServer/src/data"
 
 	"github.com/coderguang/GameEngine_go/sgstring"
 

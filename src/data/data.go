@@ -2,8 +2,8 @@ package yaohaoData
 
 import (
 	"sort"
-	yaohaoConfig "wx/xcx_yaohao_server/src/config"
-	yaohaoDef "wx/xcx_yaohao_server/src/define"
+	yaohaoConfig "xcxYaohaoServer/src/config"
+	yaohaoDef "xcxYaohaoServer/src/define"
 
 	"github.com/coderguang/GameEngine_go/sgfile"
 	"github.com/coderguang/GameEngine_go/sglog"

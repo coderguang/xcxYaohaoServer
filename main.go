@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	yaohaoData "wx/xcx_yaohao_server/src/data"
-	yaohaoDb "wx/xcx_yaohao_server/src/db"
-	yaohaoHandle "wx/xcx_yaohao_server/src/handler"
-	yaohaoSpider "wx/xcx_yaohao_server/src/spider"
+	yaohaoData "xcxYaohaoServer/src/data"
+	yaohaoDb "xcxYaohaoServer/src/db"
+	yaohaoHandle "xcxYaohaoServer/src/handler"
+	yaohaoSpider "xcxYaohaoServer/src/spider"
 
 	"github.com/coderguang/GameEngine_go/sgcmd"
 

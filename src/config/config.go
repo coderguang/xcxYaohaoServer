@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	yaohaoDef "wx/xcx_yaohao_server/src/define"
+	yaohaoDef "xcxYaohaoServer/src/define"
 )
 
 func ReadConfig(configfile string) *yaohaoDef.Config {
