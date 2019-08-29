@@ -2,6 +2,8 @@ package yaohaoDef
 
 import (
 	"sync"
+
+	"github.com/coderguang/GameEngine_go/sgtime"
 )
 
 type Config struct {
@@ -55,4 +57,21 @@ type SData struct {
 type SecureSData struct {
 	Data map[string][]*SData
 	Lock sync.RWMutex
+}
+
+type SLastestCardData struct {
+	TimeStr         string
+	PersonalNormal  int
+	PersonalJieNeng int
+	CompanyNormal   int
+	CompanyJieNeng  int
+}
+
+func (data *SLastestCardData) Reset() {
+	now := sgtime.New()
+	data.TimeStr = now.YearString() + now.MonthString()
+	data.PersonalNormal = 0
+	data.PersonalJieNeng = 0
+	data.CompanyNormal = 0
+	data.CompanyJieNeng = 0
 }

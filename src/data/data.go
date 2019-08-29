@@ -12,6 +12,7 @@ import (
 var globalCfg *yaohaoDef.Config
 var data_code *yaohaoDef.SecureSData
 var data_name *yaohaoDef.SecureSData
+var lastest_card_info *yaohaoDef.SLastestCardData
 
 var downloadMap map[string]*yaohaoDef.HistoryUrlData
 var urlMap map[string]string //don't save to db again
@@ -42,7 +43,8 @@ func InitConfig(configfile string) {
 	data_code.Data = make(map[string][]*yaohaoDef.SData)
 	data_name = new(yaohaoDef.SecureSData)
 	data_name.Data = make(map[string][]*yaohaoDef.SData)
-
+	lastest_card_info = new(yaohaoDef.SLastestCardData)
+	lastest_card_info.Reset()
 }
 
 func GetTitle() string {
@@ -228,10 +230,36 @@ func SetUpdateFlag(flag bool) {
 	globalDataUpdateFlag = flag
 }
 
+func GetLastestCardInfo() *yaohaoDef.SLastestCardData {
+	return lastest_card_info
+}
+
 //get newData
 func AddCardData(data *yaohaoDef.SData) {
 	data_code.Lock.Lock()
 	defer data_code.Lock.Unlock()
+
+	if data.Time > lastest_card_info.TimeStr {
+		lastest_card_info.Reset()
+		lastest_card_info.TimeStr = data.Time
+	}
+
+	if data.Time == lastest_card_info.TimeStr {
+		if 1 == data.Type {
+			if 1 == data.CardType {
+				lastest_card_info.PersonalNormal = 1
+			} else {
+				lastest_card_info.PersonalJieNeng = 1
+			}
+		} else {
+			if 1 == data.CardType {
+				lastest_card_info.CompanyNormal = 1
+			} else {
+				lastest_card_info.CompanyJieNeng = 1
+			}
+		}
+	}
+
 	if _, ok := data_code.Data[data.Code]; ok {
 		// if len(data_code[data.Code]) > 5 {
 		// 	if data.Time < data_code[data.Code][len(data_code[data.Code])-1].Time {

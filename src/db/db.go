@@ -19,18 +19,18 @@ var globalmysqlInsertData *sql.Stmt
 func InitDbConnection(user string, pwd string, url string, port string, dbname string) {
 	conn, err := sgmysql.Open(user, pwd, url, port, dbname, "utf8")
 	if err != nil {
-		sglog.Fatal("connection to db %s error,%e", url, err)
+		sglog.Fatal("connection to db %s error,%s", url, err)
 	}
 	globalmysqldb = conn
 	historySqlstr := "replace into " + yaohaoData.GetHistoryTableName() + " (url,status,title,tips) values (?,?,?,?);"
 	globalmysqlstmtHistory, err = globalmysqldb.Prepare(historySqlstr)
 	if err != nil {
-		sglog.Fatal("db stmt prepare history sql error,err=%e", err)
+		sglog.Fatal("db stmt prepare history sql error,err=%s", err)
 	}
 	insertSqlstr := "insert into " + yaohaoData.GetDataTableName() + " set type=?,card_type=?,code=?,name=?,time=?,tips=?;"
 	globalmysqlInsertData, err = globalmysqldb.Prepare(insertSqlstr)
 	if err != nil {
-		sglog.Fatal("db stmt prepare insert db data sql error,err=%e", err)
+		sglog.Fatal("db stmt prepare insert db data sql error,err=%s", err)
 	}
 	sglog.Info("InitDbConnection complete")
 }
@@ -39,7 +39,7 @@ func InitDbURLData() {
 	sqlStr := "select * from " + yaohaoData.GetHistoryTableName()
 	rows, rowErr := globalmysqldb.Query(sqlStr)
 	if rowErr != nil {
-		sglog.Error("connect db error,err:%e", rowErr)
+		sglog.Error("connect db error,err:%s", rowErr)
 		return
 	}
 	defer rows.Close()
@@ -86,7 +86,7 @@ func UpdateCardData(data *yaohaoDef.SData) bool {
 	rowsEx, rowErr := globalmysqldb.Query(sqlStr)
 	if nil != rowErr {
 		rowsEx.Close()
-		sglog.Fatal("find data error,code=%s,name=%s,time=%s,err=%e", data.Code, data.Name, data.Time, rowErr)
+		sglog.Fatal("find data error,code=%s,name=%s,time=%s,err=%s", data.Code, data.Name, data.Time, rowErr)
 		return false
 	}
 	if rowsEx.Next() {
@@ -100,7 +100,7 @@ func UpdateCardData(data *yaohaoDef.SData) bool {
 	rowsEx.Close()
 	_, err := globalmysqlInsertData.Exec(data.Type, data.CardType, data.Code, data.Name, data.Time, data.Desc)
 	if err != nil {
-		sglog.Error("insert error,code=%s,name=%s,time=%s,err=%e", data.Code, data.Name, data.Time, rowErr)
+		sglog.Error("insert error,code=%s,name=%s,time=%s,err=%s", data.Code, data.Name, data.Time, rowErr)
 		return false
 	}
 	return true
@@ -111,7 +111,7 @@ func InitRequireServerDbData() {
 	sqlStr := "select * from " + yaohaoData.GetDataTableName()
 	rows, rowErr := globalmysqldb.Query(sqlStr)
 	if rowErr != nil {
-		sglog.Fatal("init require server data from db error,connect db error,err:%e", rowErr)
+		sglog.Fatal("init require server data from db error,connect db error,err:%s", rowErr)
 	}
 
 	yaohaoData.SetUpdateFlag(true)

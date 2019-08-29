@@ -134,7 +134,7 @@ func ReadTxtFileAndInsertToDb(fileDir string) (string, int, int, int) {
 	sglog.Info("parse data detail complete from txt,num:%d,start insert data to db,it make a little seconds", totalNum)
 
 	if err != nil {
-		sglog.Error("read txt file:%s error ex,err:%e", fileDir, err)
+		sglog.Error("read txt file:%s error ex,err:%s", fileDir, err)
 		return "", 0, 0, 0
 	}
 	updateNum := 0
@@ -176,7 +176,7 @@ func ReadTxtFileAndInsertToDb(fileDir string) (string, int, int, int) {
 
 				response, err := http.Post(noticeUrl, "application/x-www-form-urlencoded", strings.NewReader(params))
 				if err != nil {
-					sglog.Error("all right,post data error,err:%e", err)
+					sglog.Error("all right,post data error,err:%s", err)
 				} else {
 
 					defer response.Body.Close()
@@ -184,7 +184,7 @@ func ReadTxtFileAndInsertToDb(fileDir string) (string, int, int, int) {
 					body, err := ioutil.ReadAll(response.Body)
 
 					if err != nil {
-						sglog.Error("all right,post data error when parse response,err:%e", err)
+						sglog.Error("all right,post data error when parse response,err:%s", err)
 					} else {
 						sglog.Info("all right response is %s", string(body))
 					}
@@ -200,17 +200,18 @@ func ReadTxtFileAndInsertToDb(fileDir string) (string, int, int, int) {
 	return timestr, memberType, cardType, updateNum
 }
 
-func TransportPDFToTxt(title string, rawFileName string, pdfFileName string) {
+func TransportPDFToTxt(title string, rawFileName string, pdfFileName string) bool {
 	sglog.Info("start transform pdf to txt")
 
 	cmd := exec.Command("python3", "index.py", title, rawFileName)
 	sglog.Info("command is python3 index.py %s, %s ", title, rawFileName)
 	out, err := cmd.Output()
 	if err != nil {
-		sglog.Error("exec parse pdf to txt by python error,file=%s,err=%e", pdfFileName, err)
-		return
+		sglog.Error("exec parse pdf to txt by python error,file=%s,err=%s", pdfFileName, err)
+		return false
 	}
 	sglog.Info("output is :\n%s", string(out))
+	return true
 }
 
 func TransportTxtFileToDb(txtFileName string) {
@@ -248,7 +249,7 @@ func DownloadFile(src string, title string) {
 	client := &http.Client{Transport: tr}
 	res, err := client.Get(src)
 	if err != nil {
-		sglog.Error("download file error,all try failed,src:%s ,error:%e", src, err)
+		sglog.Error("download file error,all try failed,src:%s ,error:%s", src, err)
 		if res != nil {
 			res.Body.Close()
 		}
@@ -266,13 +267,16 @@ func DownloadFile(src string, title string) {
 
 	f, err := os.Create(pdfFileName)
 	if err != err {
-		sglog.Error("create file error,src:%s,error:%e", src, err)
+		sglog.Error("create file error,src:%s,error:%s", src, err)
 		return
 	}
 	io.Copy(f, res.Body)
 	sglog.Info("download file %s ,complete,file in %s", src, pdfFileName)
 
-	TransportPDFToTxt(yaohaoData.GetTitle(), rawFileName, pdfFileName)
+	if false == TransportPDFToTxt(yaohaoData.GetTitle(), rawFileName, pdfFileName) {
+		sglog.Error("TransportPDFToTxt error,src:%s,rawFileName:%s", src, rawFileName)
+		return
+	}
 
 	txtFileName := strings.Replace(rawFileName, "pdf", "txt", -1)
 	txtFileName = yaohaoData.GetTxtDir() + txtFileName
@@ -368,7 +372,7 @@ func AutoVisitUrl(indexUrl string) {
 			if yaohaoData.NeedVisitUrl(link) {
 				er := e.Request.Visit(e.Request.AbsoluteURL(link))
 				if er != nil {
-					sglog.Error("start spider error by onHtml,url:=%s,err:=%e", e.Request.AbsoluteURL(link), er)
+					sglog.Error("start spider error by onHtml,url:=%s,err:=%s", e.Request.AbsoluteURL(link), er)
 				}
 			}
 		}
@@ -380,7 +384,7 @@ func AutoVisitUrl(indexUrl string) {
 		sgthread.SleepBySecond(60)
 		er := r.Request.Visit(r.Request.URL.String())
 		if er != nil {
-			sglog.Error("start spider error by onError,url:=%s,err:=%e", r.Request.URL.String(), er)
+			sglog.Error("start spider error by onError,url:=%s,err:=%s", r.Request.URL.String(), er)
 		}
 	})
 
@@ -420,11 +424,12 @@ func AutoVisitUrl(indexUrl string) {
 
 		er := globalCollector.Visit(indexUrl)
 		if er != nil {
-			sglog.Error("start spider error,url:=%s,err:=%e", indexUrl, er)
+			sglog.Error("start spider error,url:=%s,err:=%s", indexUrl, er)
 		}
 
 		nowTime := time.Now()
 		timeInt := time.Duration(300) * time.Second
+		nowDt := sgtime.New()
 		if 0 == len(downlist) && 0 == len(revisitlist) {
 
 			normalTime := time.Date(nowTime.Year(), nowTime.Month(), 26, 9, 0, 0, 0, nowTime.Location())
@@ -432,13 +437,33 @@ func AutoVisitUrl(indexUrl string) {
 			if nowTime.Before(normalTime) {
 				timeInt = normalTime.Sub(nowTime)
 			} else {
-				hour := time.Now().Hour()
-				if hour < 9 {
-					nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 9, 0, 0, 0, nowTime.Location())
-					timeInt = nextRun.Sub(nowTime)
-				} else if hour > 19 {
-					nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 0, 0, nowTime.Location())
-					timeInt = nextRun.Sub(nowTime)
+
+				// check is current month day all get
+				curLastestInfo := yaohaoData.GetLastestCardInfo()
+				curTimeStr := nowDt.YearString() + nowDt.MonthString()
+
+				curMonthAllUpdate := false
+				if curTimeStr == curLastestInfo.TimeStr {
+					if IsAllCardDataUpdate(curLastestInfo) {
+						curMonthAllUpdate = true
+					}
+				}
+
+				if curMonthAllUpdate {
+					//
+					sglog.Info("current month data all updates!!!!!")
+					nextMonthDt := normalTime.AddDate(0, 1, 0)
+					timeInt = nextMonthDt.Sub(nowTime)
+				} else {
+
+					hour := time.Now().Hour()
+					if hour < 9 {
+						nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 9, 0, 0, 0, nowTime.Location())
+						timeInt = nextRun.Sub(nowTime)
+					} else if hour > 19 {
+						nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 0, 0, nowTime.Location())
+						timeInt = nextRun.Sub(nowTime)
+					}
 				}
 			}
 			sleepTime = int(timeInt / time.Second)
@@ -466,4 +491,18 @@ func TransTxt(cmdstr []string) {
 	}
 	fileName := yaohaoData.GetTxtDir() + cmdstr[1]
 	TransportTxtFileToDb(fileName)
+}
+
+func IsAllCardDataUpdate(lastInfo *yaohaoDef.SLastestCardData) bool {
+
+	title := yaohaoData.GetTitle()
+
+	if "guangzhou" == title {
+		if 1 == lastInfo.PersonalNormal && 1 == lastInfo.PersonalJieNeng && 1 == lastInfo.CompanyNormal && 1 == lastInfo.CompanyJieNeng {
+			return true
+		}
+		return false
+	}
+
+	return false
 }
