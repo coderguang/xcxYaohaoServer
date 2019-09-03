@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/coderguang/xcxYaohaoServer.svg?branch=master)](https://travis-ci.org/coderguang/xcxYaohaoServer)
 ![](https://img.shields.io/badge/language-golang-orange.svg)
-[![codebeat badge](https://codebeat.co/badges/4c9ab03b-4424-48e3-8d1f-66a5350374e9)](https://codebeat.co/projects/github-com-coderguang-xcxyaohaoserver-master)
+[![codebeat badge](https://codebeat.co/badges/f44324a8-0342-4607-8ad9-028e78eee224)](https://codebeat.co/projects/github-com-coderguang-xcxyaohaoserver-master)
 [![](https://img.shields.io/badge/wp-@royalchen-blue.svg)](https://www.royalchen.com)
 
 ## 小程序体验
