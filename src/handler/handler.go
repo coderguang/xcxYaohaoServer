@@ -16,14 +16,21 @@ type wx_xcx_require_handler struct{}
 
 func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 
-	sglog.Info("get require from client,times=%d", yaohaoData.GetTotalRequireTimes())
 	r.ParseForm()
 
 	if len(r.Form["key"]) <= 0 {
 		w.Write([]byte("{\"errcode\":1}")) // not param keys
-		sglog.Debug("no key in this handle")
+		sglog.Debug("get require from client,times=%d,no key in this handle", yaohaoData.GetTotalRequireTimes())
 		flag <- true
 		return
+	}
+
+	openid := ""
+	if len(r.Form["openid"]) <= 0 {
+		sglog.Debug("get require from client,no openid")
+	} else {
+		openid = r.Form["openid"][0]
+		openid = sgstring.RemoveSpaceAndLineEnd(openid)
 	}
 
 	yaohaoData.AddTotalRequireTimes()
@@ -31,7 +38,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	if yaohaoData.IsInUpdateCardData() {
 		str := "{\"errcode\":3}"
 		w.Write([]byte(str))
-		sglog.Info("data are update,please check later")
+		sglog.Info("get require from client,times=%d,data are update,please check later,openID:%s", yaohaoData.GetTotalRequireTimes(), openid)
 		flag <- true
 		return
 	}
@@ -42,7 +49,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	if key == "time" {
 		timeStr := yaohaoData.GetLastesTimeStr()
 		w.Write([]byte(timeStr))
-		sglog.Info("someone open,require times")
+		sglog.Info("get require from client,times=%d,someone open,require times,openID:%s", yaohaoData.GetTotalRequireTimes(), openid)
 		flag <- true
 		return
 	}
@@ -51,14 +58,14 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 		jsonBytes, _ := json.Marshal(v)
 		str := "{\"errcode\":0,\"data\":" + string(jsonBytes) + "}"
 		w.Write([]byte(str))
-		sglog.Info("match data by key %s", key)
+		sglog.Info("get require from client,times=%d,match data by key %s,openID:%s", yaohaoData.GetTotalRequireTimes(), key, openid)
 		flag <- true
 		return
 	}
 
 	w.Write([]byte("{\"errcode\":2}")) // not find
 
-	sglog.Info("no this data,key=%s", key)
+	sglog.Info("get require from client,times=%d,no this data,key=%s,openID:%s", yaohaoData.GetTotalRequireTimes(), key, openid)
 	flag <- true
 }
 
