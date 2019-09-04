@@ -18,7 +18,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 
 	r.ParseForm()
 
-	sglog.Debug("require data:%s", r.Form)
+	sglog.Debug("require data:%s，%s", r, r.Form)
 
 	if len(r.Form["key"]) <= 0 {
 		w.Write([]byte("{\"errcode\":1}")) // not param keys
