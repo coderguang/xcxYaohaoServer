@@ -147,10 +147,7 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string, noticeUrl st
 		} else {
 			params := "/?key=openid," + title + "," + data.Code + "," + data.Openid
 			sendUrl := noticeUrl + params
-			_, err := http.Get(sendUrl)
-			if err != nil {
-				sglog.Error("send openid to notice server,post data error,err:%s", err)
-			}
+			http.Get(sendUrl)
 		}
 
 	}
