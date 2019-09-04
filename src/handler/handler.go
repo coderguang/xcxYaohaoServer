@@ -18,6 +18,8 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 
 	r.ParseForm()
 
+	sglog.Debug("require data:%s", r.Form)
+
 	if len(r.Form["key"]) <= 0 {
 		w.Write([]byte("{\"errcode\":1}")) // not param keys
 		sglog.Debug("get require from client,times=%d,no key in this handle", yaohaoData.GetTotalRequireTimes())
