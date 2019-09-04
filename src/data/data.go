@@ -48,6 +48,7 @@ func InitConfig(configfile string) {
 	data_name.Data = make(map[string][]*yaohaoDef.SData)
 	lastest_card_info = new(yaohaoDef.SLastestCardData)
 	openid_datas = new(yaohaoDef.SecureWxOpenid)
+	openid_datas.Data = make(map[string]*yaohaoDef.SWxOpenid)
 	lastest_card_info.Reset()
 }
 
