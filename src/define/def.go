@@ -1,10 +1,19 @@
 package yaohaoDef
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"sync"
 
+	"github.com/coderguang/GameEngine_go/sglog"
 	"github.com/coderguang/GameEngine_go/sgtime"
 )
+
+const wx_access_token_error_code string = "errcode"
+const wx_access_token_error_msg string = "errmsg"
+const wx_open_id string = "openid"
 
 type Config struct {
 	Title        string   `json:"title"`
@@ -30,6 +39,8 @@ type Config struct {
 	ResultDate   int      `json:"resultDate"`
 	Http         string   `json:"http"`
 	NoticeUrl    string   `json:"noticeUrl"`
+	Appid        string   `json:"appid"`
+	Secret       string   `json:"secret"`
 }
 
 const (
@@ -74,4 +85,63 @@ func (data *SLastestCardData) Reset() {
 	data.PersonalJieNeng = 0
 	data.CompanyNormal = 0
 	data.CompanyJieNeng = 0
+}
+
+type SWxOpenid struct {
+	Code   string
+	Openid string
+	Time   *sgtime.DateTime
+}
+
+type SecureWxOpenid struct {
+	Data map[string]*SWxOpenid
+	Lock sync.RWMutex
+}
+
+func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string) {
+	//GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
+	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + appid + "&secret=" + secret + "&js_code=JSCODE&grant_type=authorization_code"
+	resp, err := http.Get(url)
+
+	if nil != err {
+		sglog.Error("get wx openid from %s error,err=%s", url, err)
+	} else {
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if nil != err {
+			sglog.Error("get wx openid error,read resp body error,err=%s", err)
+			return
+		}
+		str := string(body)
+		sglog.Info("openid:%s", str)
+		decoder := json.NewDecoder(bytes.NewBufferString(str))
+		decoder.UseNumber()
+		var result map[string]interface{}
+		if err := decoder.Decode(&result); err != nil {
+			sglog.Error("json parse failed,str=%s,err=%s", str, err)
+			return
+		}
+		sglog.Info("parse %s json", str)
+
+		if _, ok := result[wx_open_id]; ok {
+			sglog.Error("error openid,code=%s", result[wx_access_token_error_code])
+			sglog.Error("errmsg=%s", result[wx_access_token_error_msg])
+			return
+		}
+
+		tmp_openid := result[wx_open_id]
+		tmp_openid_value, ok := tmp_openid.(string)
+		if !ok {
+			sglog.Error("parse tmp_openid failed,tmp_openid=%s", tmp_openid)
+
+			return
+		}
+		sglog.Info("access_token_value:%s", tmp_openid_value)
+
+		data.Time = sgtime.New()
+
+		data.Openid = tmp_openid_value
+	}
+
 }

@@ -22,5 +22,7 @@
     "pageTxt":["增量指标摇号结果公告","指标配置结果"],
     "resultDate":26,
     "http":"http",
-    "noticeUrl":"http://localhost:2000"
+    "noticeUrl":"http://localhost:2000",
+    "appid":"your appid",
+    "secret":"your sceret"
 }

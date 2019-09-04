@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	yaohaoData "xcxYaohaoServer/src/data"
+	yaohaoDef "xcxYaohaoServer/src/define"
 
 	"github.com/coderguang/GameEngine_go/sgstring"
 
@@ -28,11 +29,26 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	}
 
 	openid := ""
-	if len(r.Form["openid"]) <= 0 {
-		sglog.Debug("get require from client,no openid")
+	code := ""
+	if len(r.Form["code"]) <= 0 {
+		sglog.Debug("get require from client,no code")
 	} else {
-		openid = r.Form["openid"][0]
-		openid = sgstring.RemoveSpaceAndLineEnd(openid)
+		code = r.Form["code"][0]
+		code = sgstring.RemoveSpaceAndLineEnd(code)
+
+		flag, tmpid := yaohaoData.GetWxOpenid(code)
+		if flag {
+			openid = tmpid
+		} else {
+			sdata := new(yaohaoDef.SWxOpenid)
+			sdata.Code = code
+			appid, secret := yaohaoData.GetWxAppidAndSecret()
+			sdata.GetOpenIdFromWx(appid, secret)
+			openid = sdata.Openid
+			if "" != sdata.Openid {
+				yaohaoData.AddWxOpenid(sdata)
+			}
+		}
 	}
 
 	yaohaoData.AddTotalRequireTimes()
@@ -40,7 +56,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	if yaohaoData.IsInUpdateCardData() {
 		str := "{\"errcode\":3}"
 		w.Write([]byte(str))
-		sglog.Info("get require from client,times=%d,data are update,please check later,openID:%s", yaohaoData.GetTotalRequireTimes(), openid)
+		sglog.Info("get require from client,times=%d,data are update,please check later,code:%s,openID:%s", yaohaoData.GetTotalRequireTimes(), code, openid)
 		flag <- true
 		return
 	}
@@ -51,7 +67,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	if key == "time" {
 		timeStr := yaohaoData.GetLastesTimeStr()
 		w.Write([]byte(timeStr))
-		sglog.Info("get require from client,times=%d,someone open,require times,openID:%s", yaohaoData.GetTotalRequireTimes(), openid)
+		sglog.Info("get require from client,times=%d,someone open,require times,code:%s,openID:%s", yaohaoData.GetTotalRequireTimes(), code, openid)
 		flag <- true
 		return
 	}

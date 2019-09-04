@@ -5,6 +5,8 @@ import (
 	yaohaoConfig "xcxYaohaoServer/src/config"
 	yaohaoDef "xcxYaohaoServer/src/define"
 
+	"github.com/coderguang/GameEngine_go/sgtime"
+
 	"github.com/coderguang/GameEngine_go/sgfile"
 	"github.com/coderguang/GameEngine_go/sglog"
 )
@@ -13,6 +15,7 @@ var globalCfg *yaohaoDef.Config
 var data_code *yaohaoDef.SecureSData
 var data_name *yaohaoDef.SecureSData
 var lastest_card_info *yaohaoDef.SLastestCardData
+var openid_datas *yaohaoDef.SecureWxOpenid
 
 var downloadMap map[string]*yaohaoDef.HistoryUrlData
 var urlMap map[string]string //don't save to db again
@@ -44,6 +47,7 @@ func InitConfig(configfile string) {
 	data_name = new(yaohaoDef.SecureSData)
 	data_name.Data = make(map[string][]*yaohaoDef.SData)
 	lastest_card_info = new(yaohaoDef.SLastestCardData)
+	openid_datas = new(yaohaoDef.SecureWxOpenid)
 	lastest_card_info.Reset()
 }
 
@@ -419,4 +423,36 @@ func RemoveIgnoreUrl(cmdstr []string) {
 		sglog.Info("add %s to ignore map success", v)
 	}
 	sglog.Info("end RemoveIgnoreUrl cmd,total=%d", len(cmdstr)-1)
+}
+
+func GetWxAppidAndSecret() (string, string) {
+	return globalCfg.Appid, globalCfg.Secret
+}
+
+func GetWxOpenid(code string) (bool, string) {
+	openid_datas.Lock.RLock()
+	defer openid_datas.Lock.RUnlock()
+	if v, ok := openid_datas.Data[code]; ok {
+		now := sgtime.New()
+		if now.GetTotalSecond()-v.Time.GetTotalSecond() > 3600 {
+			delete(openid_datas.Data, code)
+			return false, ""
+		}
+		return true, v.Openid
+	}
+	return false, ""
+}
+
+func AddWxOpenid(data *yaohaoDef.SWxOpenid) {
+	openid_datas.Lock.RLock()
+	defer openid_datas.Lock.RUnlock()
+	if v, ok := openid_datas.Data[data.Code]; ok {
+		now := sgtime.New()
+		if now.GetTotalSecond()-v.Time.GetTotalSecond() > 3600 {
+			delete(openid_datas.Data, data.Code)
+		} else {
+			sglog.Error("duplicate code is %s,old openid:%s,new openid:%s", data.Code, v.Openid, data.Openid)
+		}
+	}
+	openid_datas.Data[data.Code] = data
 }
