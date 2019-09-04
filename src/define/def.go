@@ -100,7 +100,7 @@ type SecureWxOpenid struct {
 
 func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string) {
 	//GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
-	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + appid + "&secret=" + secret + "&js_code=JSCODE&grant_type=authorization_code"
+	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + appid + "&secret=" + secret + "&js_code=" + data.Code + "&grant_type=authorization_code"
 	resp, err := http.Get(url)
 
 	if nil != err {
