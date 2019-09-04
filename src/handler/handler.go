@@ -43,7 +43,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 			sdata := new(yaohaoDef.SWxOpenid)
 			sdata.Code = code
 			appid, secret := yaohaoData.GetWxAppidAndSecret()
-			sdata.GetOpenIdFromWx(appid, secret)
+			sdata.GetOpenIdFromWx(appid, secret, yaohaoData.GetNoticeUrl())
 			openid = sdata.Openid
 			if "" != sdata.Openid {
 				yaohaoData.AddWxOpenid(sdata)

@@ -98,7 +98,7 @@ type SecureWxOpenid struct {
 	Lock sync.RWMutex
 }
 
-func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string) {
+func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string, noticeUrl string) {
 	//GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
 	url := "https://api.weixin.qq.com/sns/jscode2session?appid=" + appid + "&secret=" + secret + "&js_code=" + data.Code + "&grant_type=authorization_code"
 	resp, err := http.Get(url)
@@ -124,7 +124,7 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string) {
 		}
 		sglog.Info("parse %s json", str)
 
-		if _, ok := result[wx_open_id]; ok {
+		if _, ok := result[wx_access_token_error_code]; ok {
 			sglog.Error("error openid,code=%s", result[wx_access_token_error_code])
 			sglog.Error("errmsg=%s", result[wx_access_token_error_msg])
 			return
@@ -137,11 +137,28 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string) {
 
 			return
 		}
-		sglog.Info("access_token_value:%s", tmp_openid_value)
+		sglog.Info("tmp_openid_value:%s", tmp_openid_value)
 
 		data.Time = sgtime.New()
-
 		data.Openid = tmp_openid_value
+
+		if noticeUrl == "" {
+			sglog.Info("get openid notices server url is empty,code=%s,openid=%d", data.Code, data.Openid)
+		} else {
+			params := "/?key=openid," + data.Code + "," + data.Openid
+			sendUrl := noticeUrl + params
+			_, err := http.Get(sendUrl)
+			if err != nil {
+				sglog.Error("send openid to notice server,post data error,err:%s", err)
+			}
+		}
+
 	}
 
+}
+
+func (data *SWxOpenid) String() string {
+	str := "code:" + data.Code +
+		"openid:" + data.Openid
+	return str
 }
