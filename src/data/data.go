@@ -464,15 +464,15 @@ func ClearOpenidByTimer() {
 	for {
 		{
 			sglog.Info("start to run clear openid data")
-			openid_datas.Lock.Lock()
-			defer openid_datas.Lock.Unlock()
 			now := sgtime.New()
+			openid_datas.Lock.Lock()
 			for k, v := range openid_datas.Data {
 				if now.GetTotalSecond()-v.Time.GetTotalSecond() > 3600 {
 					sglog.Debug("delete openid data ,code:%s,openid:%s", v.Code, v.Openid)
 					delete(openid_datas.Data, k)
 				}
 			}
+			openid_datas.Lock.Unlock()
 			sglog.Info("clear openid data complete")
 		}
 		nowTime := time.Now()
