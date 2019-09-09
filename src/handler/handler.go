@@ -98,6 +98,7 @@ func (h *wx_xcx_require_handler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	tmpChan := make(chan bool)
 	go doCheck(w, r, tmpChan)
 	<-tmpChan
+	close(tmpChan)
 }
 
 func HttpRequireServer(checkPort string) {
