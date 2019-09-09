@@ -17,6 +17,10 @@ type wx_xcx_require_handler struct{}
 
 func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 
+	defer func() {
+		flag <- true
+	}()
+
 	r.ParseForm()
 
 	sglog.Debug("require data:%s", r.Form)
@@ -24,7 +28,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 	if len(r.Form["key"]) <= 0 {
 		w.Write([]byte("{\"errcode\":1}")) // not param keys
 		sglog.Debug("get require from client,times=%d,no key in this handle", yaohaoData.GetTotalRequireTimes())
-		flag <- true
+
 		return
 	}
 
@@ -60,7 +64,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 		str := "{\"errcode\":3}"
 		w.Write([]byte(str))
 		sglog.Info("get require from client,times=%d,data are update,please check later,code:%s,openID:%s", yaohaoData.GetTotalRequireTimes(), code, openid)
-		flag <- true
+
 		return
 	}
 
@@ -71,7 +75,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 		timeStr := yaohaoData.GetLastesTimeStr()
 		w.Write([]byte(timeStr))
 		sglog.Info("get require from client,times=%d,someone open,require times,code:%s,openID:%s", yaohaoData.GetTotalRequireTimes(), code, openid)
-		flag <- true
+
 		return
 	}
 
@@ -80,14 +84,14 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 		str := "{\"errcode\":0,\"data\":" + string(jsonBytes) + "}"
 		w.Write([]byte(str))
 		sglog.Info("get require from client,times=%d,match data by key %s,openID:%s", yaohaoData.GetTotalRequireTimes(), key, openid)
-		flag <- true
+
 		return
 	}
 
 	w.Write([]byte("{\"errcode\":2}")) // not find
 
 	sglog.Info("get require from client,times=%d,no this data,key=%s,openID:%s", yaohaoData.GetTotalRequireTimes(), key, openid)
-	flag <- true
+
 }
 
 func (h *wx_xcx_require_handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
