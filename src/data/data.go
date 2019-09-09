@@ -2,9 +2,11 @@ package yaohaoData
 
 import (
 	"sort"
+	"time"
 	yaohaoConfig "xcxYaohaoServer/src/config"
 	yaohaoDef "xcxYaohaoServer/src/define"
 
+	"github.com/coderguang/GameEngine_go/sgthread"
 	"github.com/coderguang/GameEngine_go/sgtime"
 
 	"github.com/coderguang/GameEngine_go/sgfile"
@@ -456,4 +458,28 @@ func AddWxOpenid(data *yaohaoDef.SWxOpenid) {
 		}
 	}
 	openid_datas.Data[data.Code] = data
+}
+
+func ClearOpenidByTimer() {
+	for {
+		{
+			sglog.Info("start to run clear openid data")
+			openid_datas.Lock.Lock()
+			defer openid_datas.Lock.Unlock()
+			now := sgtime.New()
+			for k, v := range openid_datas.Data {
+				if now.GetTotalSecond()-v.Time.GetTotalSecond() > 3600 {
+					sglog.Debug("delete openid data ,code:%s,openid:%s", v.Code, v.Openid)
+					delete(openid_datas.Data, k)
+				}
+			}
+			sglog.Info("clear openid data complete")
+		}
+		nowTime := time.Now()
+		normalTime := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 59, 0, nowTime.Location())
+		timeInt := normalTime.Sub(nowTime)
+		sleepTime := int(timeInt / time.Second)
+		sglog.Info("next clear timer will run after %d seconds in %s", sleepTime, normalTime.String())
+		sgthread.SleepBySecond(sleepTime)
+	}
 }

@@ -54,6 +54,8 @@ func main() {
 	yaohaoDb.InitDbURLData()
 	yaohaoDb.InitRequireServerDbData()
 
+	go yaohaoData.ClearOpenidByTimer()
+
 	go yaohaoSpider.AutoVisitUrl(yaohaoData.GetIndexUrl())
 
 	RegistCmd()
