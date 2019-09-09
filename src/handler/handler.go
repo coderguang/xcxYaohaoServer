@@ -36,6 +36,8 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 		code = r.Form["code"][0]
 		code = sgstring.RemoveSpaceAndLineEnd(code)
 
+		sglog.Info("info start: code:%s,openid:%s from require", code, openid)
+
 		flag, tmpid := yaohaoData.GetWxOpenid(code)
 		if flag {
 			openid = tmpid
@@ -49,7 +51,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 				yaohaoData.AddWxOpenid(sdata)
 			}
 		}
-		sglog.Info("info: code:%s,openid:%s from require")
+		sglog.Info("info: code:%s,openid:%s from require", code, openid)
 	}
 
 	yaohaoData.AddTotalRequireTimes()
