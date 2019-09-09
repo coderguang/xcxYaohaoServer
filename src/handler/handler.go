@@ -49,6 +49,7 @@ func doCheck(w http.ResponseWriter, r *http.Request, flag chan bool) {
 				yaohaoData.AddWxOpenid(sdata)
 			}
 		}
+		sglog.Info("info: code:%s,openid:%s from require")
 	}
 
 	yaohaoData.AddTotalRequireTimes()
