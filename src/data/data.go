@@ -478,7 +478,7 @@ func ClearOpenidByTimer() {
 		nowTime := time.Now()
 		normalTime := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 59, 0, nowTime.Location())
 		timeInt := normalTime.Sub(nowTime)
-		sleepTime := int(timeInt / time.Second)
+		sleepTime := int(timeInt/time.Second) + 1
 		sglog.Info("next clear timer will run after %d seconds in %s", sleepTime, normalTime.String())
 		sgthread.SleepBySecond(sleepTime)
 	}

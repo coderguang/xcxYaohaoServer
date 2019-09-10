@@ -461,12 +461,12 @@ func AutoVisitUrl(indexUrl string) {
 						nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 9, 0, 0, 0, nowTime.Location())
 						timeInt = nextRun.Sub(nowTime)
 					} else if hour > 19 {
-						nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 0, 0, nowTime.Location())
+						nextRun := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(), 23, 59, 59, 0, nowTime.Location())
 						timeInt = nextRun.Sub(nowTime)
 					}
 				}
 			}
-			sleepTime = int(timeInt / time.Second)
+			sleepTime = int(timeInt/time.Second) + 1
 		}
 		sglog.Info("data collection now in sleep,will run after %ds,%s", sleepTime, nowTime.Add(timeInt))
 		sgthread.SleepBySecond(sleepTime)
