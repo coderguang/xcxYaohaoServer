@@ -114,7 +114,7 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string, noticeUrl st
 			return
 		}
 		str := string(body)
-		sglog.Info("openid:%s", str)
+		//sglog.Info("openid:%s", str)
 		decoder := json.NewDecoder(bytes.NewBufferString(str))
 		decoder.UseNumber()
 		var result map[string]interface{}
@@ -122,7 +122,7 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string, noticeUrl st
 			sglog.Error("json parse failed,str=%s,err=%s", str, err)
 			return
 		}
-		sglog.Info("parse %s json", str)
+		//sglog.Info("parse %s json", str)
 
 		if _, ok := result[wx_access_token_error_code]; ok {
 			sglog.Error("error openid,code=%s", result[wx_access_token_error_code])
@@ -137,7 +137,7 @@ func (data *SWxOpenid) GetOpenIdFromWx(appid string, secret string, noticeUrl st
 
 			return
 		}
-		sglog.Info("tmp_openid_value:%s", tmp_openid_value)
+		//sglog.Info("tmp_openid_value:%s", tmp_openid_value)
 
 		data.Time = sgtime.New()
 		data.Openid = tmp_openid_value
